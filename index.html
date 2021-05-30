@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>WebXR Demo</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html, body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  /*font-family: "Segoe WP", "Segoe UI", "Verdana", "Arial", sans-serif;*/
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  touch-action: none;
+}
+
+.hidden {
+  display: none;
+}
+
+#notSupported, #errorMessage {
+  color: red;
+  width: 100%;
+  height: 60px;
+  position: absolute;
+  top: 50%;
+  margin-top: -30px;
+  background-color: #EEEEEE;
+  border: 1px solid #888888;
+  text-align: center;
+  padding-top: 10px;
+  font-size: 30px;
+  z-index: 3;
+  cursor: default;
+}</style><script defer="defer" src="main.js"></script></head><body><canvas id="root" touch-action="none"></canvas><div class="hidden" id="notSupported"><your>browser does not support WebGL</your></div><div class="hidden" id="errorMessage"></div></body></html>
