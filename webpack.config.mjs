@@ -1,5 +1,4 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import FriendlyErrorsWebpackPlugin from 'friendly-errors-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
@@ -23,7 +22,7 @@ const config = {
     libraryTarget: 'umd',
   },
   resolve: {
-    extensions: [ '.ts', '.js' ]
+    extensions: ['.ts', '.js']
   },
   module: {
     rules: [
@@ -38,51 +37,13 @@ const config = {
         }
       },
       {
-        test: /\.woff2?(\?v=\d+\.\d+\.\d+)?$/,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
-            mimetype: 'application/font-woff'
-          }
-        }
-      },
-      {
-        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
-            mimetype: 'application/octet-stream'
-          }
-        }
-      },
-      {
-        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        use: 'file-loader'
-      },
-      {
-        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
-            mimetype: 'image/svg+xml'
-          }
-        }
-      },
-      {
         test: /\.(ico|png|jpg|jpeg|gif|webp|env|glb|stl)$/i,
-        use: [{
-            loader: 'url-loader',
-            options: {
-                limit: 8192,
-            },
-        }, ],
-      },
-      {
-        test: /\.pug$/,
-        use: 'pug-loader'
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 8192,
+          },
+        },
       }
     ]
   },
@@ -90,9 +51,6 @@ const config = {
     hints: false
   },
   plugins: [
-    new FriendlyErrorsWebpackPlugin({
-      clearConsole: false
-    }),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'assets' }
@@ -104,7 +62,7 @@ const config = {
     }),
     new HtmlWebpackPlugin({
       title: 'WebXR Demo',
-      template: path.resolve('public/index.pug'),
+      template: path.resolve('public/index.html')
       // favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
     }),
   ]

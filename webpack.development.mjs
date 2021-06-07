@@ -46,25 +46,6 @@ export default {
     ignored: /node_modules/,
   },
 
-  module: {
-    rules: [
-      {
-        test: /global\.css$/,
-        use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader' }
-        ]
-      },
-      {
-        test: /^((?!global).)*\.css$/,
-        use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader', options: { modules: true } }
-        ]
-      }
-    ]
-  },
-
   plugins: [
     new EnvironmentPlugin({
       NODE_ENV: 'development'

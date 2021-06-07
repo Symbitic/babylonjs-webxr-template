@@ -3,7 +3,8 @@ import App from './App';
 
 window.addEventListener('DOMContentLoaded', async () => {
   if (!Engine.isSupported()) {
-    const div = <HTMLDivElement>document.getElementById('notSupported');
+    const div = <HTMLDivElement>document.getElementById('errorMessage');
+    div.innerHTML = 'Your browser does not support WebGL';
     div.className = '';
     return;
   }
