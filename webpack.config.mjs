@@ -1,79 +1,128 @@
+import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
-import { merge } from 'webpack-merge';
 
-const { NoEmitOnErrorsPlugin, ProvidePlugin } = webpack;
+const {
+  EnvironmentPlugin,
+  HotModuleReplacementPlugin,
+  NoEmitOnErrorsPlugin,
+  ProvidePlugin
+} = webpack;
 
-import development from './webpack.development.mjs';
-import production from './webpack.production.mjs';
+const PORT = process.env.PORT || 8080;
 
-const config = {
-  entry: path.resolve('src/index.ts'),
-  target: 'web',
-  stats: 'errors-only',
-  bail: true,
-  output: {
-    crossOriginLoading: 'anonymous',
-    filename: '[name].js',
-    path: path.resolve('dist'),
-    sourceMapFilename: '[file].map',
-    libraryTarget: 'umd',
-  },
-  resolve: {
-    extensions: ['.ts', '.js']
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(js|ts)x?$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            cacheDirectory: true
+export default function ({ production }) {
+  const mode = production ? 'production' : 'development';
+  const devtool = production ? false : 'inline-source-map';
+
+  const optimization = {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        //cache: true
+      })
+    ]
+    //usedExports: true,
+  };
+
+  return {
+    mode,
+    devtool,
+    entry: path.resolve('src/index.ts'),
+    target: 'web',
+    stats: 'errors-only',
+    bail: true,
+    output: {
+      crossOriginLoading: 'anonymous',
+      filename: '[name].js',
+      path: path.resolve('dist'),
+      sourceMapFilename: '[file].map',
+      libraryTarget: 'umd',
+    },
+    resolve: {
+      extensions: ['.ts', '.js']
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(js|ts)x?$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true
+            }
+          }
+        },
+        {
+          test: /\.(ico|png|jpg|jpeg|gif|webp|env|glb|stl)$/i,
+          use: {
+            loader: 'url-loader',
+            options: {
+              limit: 8192
+            }
           }
         }
-      },
-      {
-        test: /\.(ico|png|jpg|jpeg|gif|webp|env|glb|stl)$/i,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 8192,
-          },
-        },
-      }
-    ]
-  },
-  performance: {
-    hints: false
-  },
-  plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'assets' }
       ]
-    }),
-    new NoEmitOnErrorsPlugin(),
-    new ProvidePlugin({
-      CANNON: 'cannon'
-    }),
-    new HtmlWebpackPlugin({
-      title: 'WebXR Demo',
-      template: path.resolve('public/index.html')
-      // favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
-    }),
-  ]
-};
+    },
+    performance: {
+      hints: false
+    },
+    optimization: production ? optimization : {},
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: 300,
+      ignored: /node_modules/,
+    },
+    plugins: [
+      new CopyWebpackPlugin({
+        patterns: [
+          { from: 'assets' }
+        ]
+      }),
+      new NoEmitOnErrorsPlugin(),
+      new EnvironmentPlugin({
+        NODE_ENV: mode
+      }),
+      new ProvidePlugin({
+        CANNON: 'cannon'
+      }),
+      new HtmlWebpackPlugin({
+        title: 'WebXR Demo',
+        template: path.resolve('public/index.html'),
+        favicon: path.resolve('public/favicon.png')
+      }),
+      ...production ? [
+        new CompressionWebpackPlugin()
+      ] : [
+        new HotModuleReplacementPlugin()
+      ]
+    ],
+    devServer: {
+      watchContentBase: true,
+      open: true,
+      quiet: true,
+      port: PORT,
+      publicPath: `http://localhost:${PORT}`,
+      noInfo: true,
+      compress: true,
+      hot: true,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      disableHostCheck: true,
+      stats: 'errors-only',
+      watchOptions: {
+        poll: 300
+      },
 
-export default function (env) {
-  if (env.production) {
-    return merge(config, production);
-  } else if (env.development) {
-    return merge(config, development);
-  } else {
-    throw new Error('Unrecognized environment');
-  }
+      // enable to access from other devices on the network
+      useLocalIp: true,
+      host: '0.0.0.0',
+
+      // if you aren’t using ngrok, and want to connect locally, webxr requires https
+      // https: true,
+    },
+  };
 };

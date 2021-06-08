@@ -1,6 +1,8 @@
 import { Engine, WebXRSessionManager } from '@babylonjs/core';
 import App from './App';
 
+const XR_REQUIRED = false;
+
 window.addEventListener('DOMContentLoaded', async () => {
   if (!Engine.isSupported()) {
     const div = <HTMLDivElement>document.getElementById('errorMessage');
@@ -16,14 +18,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   const supported = await WebXRSessionManager.IsSessionSupportedAsync('immersive-vr');
-  if (!supported) {
+  if (!supported && XR_REQUIRED) {
     const div = <HTMLDivElement>document.getElementById('errorMessage');
-    div.innerHTML = ``;
-    /*
-    div.innerHTML = `Failed to create virtual reality scene`;
+    div.innerHTML = 'Failed to create virtual reality scene';
     div.className = '';
     return;
-    */
   }
 
   engine.enableOfflineSupport = false;
