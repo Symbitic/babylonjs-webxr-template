@@ -12,10 +12,6 @@ import {
   Vector3,
   WebXRDefaultExperience,
   WebXRSessionManager,
-
-  StandardMaterial,
-  WebXRInputSource,
-  GlowLayer,
 } from '@babylonjs/core';
 
 import {
@@ -30,7 +26,7 @@ import "@babylonjs/loaders/glTF";
 import * as cannon from 'cannon';
 
 import { AbstractController } from './AbstractController';
-import { ShooterController, GrabController } from './Controllers';
+import { ShooterController } from './Controllers';
 
 export default class App {
   private _engine: Engine;
@@ -161,47 +157,6 @@ export default class App {
       this._experience = await this._scene.createDefaultXRExperienceAsync({
         floorMeshes: this._floorMeshes,
         disableTeleportation: true
-      });
-
-      //const scene = this._scene;
-
-      this._experience.input.onControllerAddedObservable.add((inputSource: WebXRInputSource) => {
-        //inputSource.onMeshLoadedObservable.add((model) => {});
-
-        //pistol.setParent(inputSource.pointer);
-
-        inputSource.onMotionControllerInitObservable.add((motionController) => {
-          /*
-          motionController.onModelLoadedObservable.add((model) => {
-            const name = model.handedness;
-            const material = new StandardMaterial(`material-${name}`, scene);
-            material.diffuseColor = name === 'left'
-              ? new Color3(1, 0, 0)
-              : new Color3(0, 0, 1);
-            const box = MeshBuilder.CreateBox(`box-${name}`, { size: 1 }, this._scene);
-            box.material = material;
-            model.rootMesh = box;
-          });
-          */
-          /*
-          if (motionController.handedness === 'left') {
-            const gl = new GlowLayer("glow", <Scene>this._scene, {
-                mainTextureFixedSize: 512
-            });
-            const lightsaber = MeshBuilder.CreateCylinder('lightsaber', {
-                diameter: 0.70,
-                height: 12
-            }, this._scene);
-            lightsaber.position.set(0, 0, 90);
-
-            const material = new StandardMaterial('glowy', <Scene>this._scene);
-            material.emissiveColor = Color3.White();
-            lightsaber.material = material;
-
-            lightsaber.parent = <AbstractMesh>inputSource.grip;
-          }
-          */
-        });
       });
 
       const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);

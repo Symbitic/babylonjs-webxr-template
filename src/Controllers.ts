@@ -1,6 +1,6 @@
 import {
   AbstractMesh,
-  Axis,
+  //Axis,
   Color3,
   GlowLayer,
   Mesh,
@@ -9,7 +9,7 @@ import {
   PhysicsImpostor,
   Scene,
   SceneLoader,
-  Space,
+  //Space,
   Vector3,
   WebXRAbstractMotionController,
   WebXRControllerComponent,
@@ -34,7 +34,6 @@ export class ShooterController extends BaseController {
   async setupLightsaber(xr: WebXRDefaultExperience, scene: Scene) {
     // Using the glTF model imported from: https://www.remix3d.com/details/G009SWQ4DT9P
     // Thanks to Paint3D
-
     const model = await SceneLoader.ImportMeshAsync('', '//david.blob.core.windows.net/babylonjs/', 'lasersaber.glb', scene);
 
     const meshChildren = model.meshes[0].getChildMeshes();
@@ -68,8 +67,8 @@ export class ShooterController extends BaseController {
 
             lightsaber.position = Vector3.ZeroReadOnly;
             lightsaber.rotation = mesh.rotation;
-            lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
-            lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
+            //lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
+            //lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
             lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
           }
         });
