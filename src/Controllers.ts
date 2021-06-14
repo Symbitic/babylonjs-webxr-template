@@ -6,11 +6,13 @@ import {
   Mesh,
   MeshBuilder,
   Nullable,
+  PBRMaterial,
   PhysicsImpostor,
   Quaternion,
   Scene,
   SceneLoader,
   //Space,
+  TransformNode,
   Vector3,
   WebXRAbstractMotionController,
   WebXRControllerComponent,
@@ -18,6 +20,30 @@ import {
 } from '@babylonjs/core';
 
 import { BaseController } from './AbstractController';
+
+function createMallet(scene: Scene) {
+  const handle = MeshBuilder.CreateCylinder("handle", {height: 0.5, diameter: 0.04}, scene);
+  handle.position.y = 0.05;
+  const head = MeshBuilder.CreateCylinder("head", {height: 0.2, diameter: 0.1}, scene);
+  head.rotate(head.right, Math.PI / 2);
+  head.position.y = 0.3
+  const mallet = new TransformNode("mallet", scene);
+  handle.parent = mallet;
+  head.parent = mallet;
+
+  const handleMat = new PBRMaterial("handleMat", scene);
+  handleMat.albedoColor = new Color3(0.6, 0.5, 0.2);
+  handleMat.roughness = 0.3;
+  handle.material = handleMat;
+
+  const headMat = new PBRMaterial("headMat", scene);
+  headMat.albedoColor = Color3.BlackReadOnly;
+  headMat.roughness = 0.6;
+  head.material = headMat;
+
+  return mallet;
+}
+
 
 /**
  * Shoot spheres using the Oculus Quest controller.
@@ -37,12 +63,14 @@ export class ShooterController extends BaseController {
     // Thanks to Paint3D
     const model = await SceneLoader.ImportMeshAsync('', '//david.blob.core.windows.net/babylonjs/', 'lasersaber.glb', scene);
 
+    const mallet = createMallet(scene);
+
     const meshChildren = model.meshes[0].getChildMeshes();
     for (let i = 0; i < meshChildren.length; i++) {
       // looking for the laser itself to scale it a little bit
       if (meshChildren[i].id === 'mesh_id37') {
         meshChildren[i].scaling.y *= 2.2;
-        meshChildren[i].position.y += 120;
+        //meshChildren[i].position.y += 120;
         (meshChildren[i].material as any).emissiveColor = Color3.White();
         break;
       }
@@ -59,14 +87,31 @@ export class ShooterController extends BaseController {
 
     xr.pointerSelection.detach();
 
-    xr.input.onControllerAddedObservable.add((inputSource) => {
-      inputSource.onMotionControllerInitObservable.add((motionController) => {
+    xr.input.onControllerAddedObservable.add((source) => {
+      if (source.inputSource.handedness === 'right') {
+        lightsaber.parent = source.grip || source.pointer;
+        lightsaber.isVisible = true;
+        lightsaber.position = Vector3.Zero();
+        //lightsaber.rotation = mesh.rotation;
+        //lightsaber.rotate(Axis.X, Math.PI / 2);
+        lightsaber.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
+        //lightsaber.position.z += 0.2;
+        //lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
+        //lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
+        //lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
+      } else {
+        mallet.setParent((source as any).grip);
+        mallet.position = Vector3.Zero();
+        mallet.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
+      }
+      /*
+      source.onMotionControllerInitObservable.add((motionController) => {
         motionController.onModelLoadedObservable.add(() => {
           // motionController.rootMesh = lightsaber;
 
-          //let mesh = <AbstractMesh>inputSource.grip;
+          //let mesh = <AbstractMesh>source.grip;
           if (motionController.handedness === 'right') {
-            lightsaber.parent = inputSource.grip || inputSource.pointer;
+            lightsaber.parent = source.grip || source.pointer;
             lightsaber.isVisible = true;
             lightsaber.position = Vector3.Zero();
             //lightsaber.rotation = mesh.rotation;
@@ -76,9 +121,14 @@ export class ShooterController extends BaseController {
             //lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
             //lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
             //lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
+          } else {
+            mallet.setParent((source as any).grip);
+            mallet.position = Vector3.Zero();
+            mallet.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
           }
         });
       });
+      */
     });
   }
 
