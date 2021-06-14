@@ -156,7 +156,8 @@ export default class App {
     if (this._supported) {
       this._experience = await this._scene.createDefaultXRExperienceAsync({
         floorMeshes: this._floorMeshes,
-        disableTeleportation: true
+        disableTeleportation: true,
+        // inputOptions: { doNotLoadControllerMeshes: true }
       });
 
       const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
