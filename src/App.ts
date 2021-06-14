@@ -205,7 +205,7 @@ export default class App {
       });
 
       const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
-
+      shooterController.setupLightsaber(this._experience, this._scene)
 
       //const grabController = new GrabController(this._experience);
 
