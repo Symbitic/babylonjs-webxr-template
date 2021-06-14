@@ -31,6 +31,7 @@
     "@babylonjs/core": "^4.2.0",
     "@babylonjs/gui": "^4.2.0",
     "@babylonjs/inspector": "^4.2.0",
+    "@babylonjs/loaders": "^4.2.0",
     "cannon": "^0.6.2"
   },
   "devDependencies": {

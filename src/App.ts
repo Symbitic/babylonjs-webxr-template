@@ -25,6 +25,8 @@ import {
   TextBlock,
 } from '@babylonjs/gui';
 
+import "@babylonjs/loaders/glTF";
+
 import * as cannon from 'cannon';
 
 import { AbstractController } from './AbstractController';
@@ -44,6 +46,10 @@ export default class App {
 
   get error() {
     return this._error;
+  }
+
+  get supported() {
+    return this._supported;
   }
 
   constructor(engine: Engine, canvas: HTMLCanvasElement) {
@@ -199,6 +205,8 @@ export default class App {
       });
 
       const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
+
+
       //const grabController = new GrabController(this._experience);
 
       this._controllers.push(shooterController);

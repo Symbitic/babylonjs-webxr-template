@@ -1,11 +1,14 @@
 import {
   AbstractMesh,
   Axis,
+  Color3,
+  GlowLayer,
   Mesh,
   MeshBuilder,
   Nullable,
   PhysicsImpostor,
   Scene,
+  SceneLoader,
   Space,
   Vector3,
   WebXRAbstractMotionController,
@@ -26,24 +29,34 @@ export class ShooterController extends BaseController {
     super(xr);
     this._scene = scene;
     this._physicsRoot = physicsRoot;
-    this.setupLightsaber(xr, scene);
   }
 
-  private setupLightsaber(xr: WebXRDefaultExperience, _scene: Scene) {
-    let lightsaber: any = null;
+  async setupLightsaber(xr: WebXRDefaultExperience, scene: Scene) {
+    // Using the glTF model imported from: https://www.remix3d.com/details/G009SWQ4DT9P
+    // Thanks to Paint3D
 
-    /*
-    xr.input.onControllerAddedObservable.add((controller) => {
-      controller.onMotionControllerInitObservable.add((motionController) => {
-        if (motionController.handness === 'right') {
-          lightsaber = MeshBuilder.CreateBox('lightsaber', { width: 1, depth: 1, height: 1 });
-          // Make the position of the sphere the same as the controller
-          lightsaber.position = this.getControllerPosition(motionController);
-          lightsaber.parent = controller.grip;
-        }
-      });
+    const model = await SceneLoader.ImportMeshAsync('', '//david.blob.core.windows.net/babylonjs/', 'lasersaber.glb', scene);
+
+    const meshChildren = model.meshes[0].getChildMeshes();
+    for (let i = 0; i < meshChildren.length; i++) {
+      // looking for the laser itself to scale it a little bit
+      if (meshChildren[i].id === 'mesh_id37') {
+        meshChildren[i].scaling.y *= 2.2;
+        meshChildren[i].position.y += 120;
+        (meshChildren[i].material as any).emissiveColor = Color3.White();
+        break;
+      }
+    }
+
+    const lightsaber = model.meshes[0];
+    lightsaber.position = new Vector3(0, 1, 2);
+
+    const gl = new GlowLayer('glow', scene, {
+      mainTextureFixedSize: 512
     });
-    */
+    gl.isEnabled = true;
+
+
     xr.pointerSelection.detach();
 
     xr.input.onControllerAddedObservable.add((inputSource) => {
@@ -52,6 +65,7 @@ export class ShooterController extends BaseController {
           let mesh = <AbstractMesh>inputSource.grip;
           if (motionController.handedness !== "left") {
             lightsaber.setParent(mesh);
+
             lightsaber.position = Vector3.ZeroReadOnly;
             lightsaber.rotation = mesh.rotation;
             lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
