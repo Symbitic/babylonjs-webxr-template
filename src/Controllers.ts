@@ -1,12 +1,13 @@
 import {
   AbstractMesh,
-  Axis,
+  //Axis,
   Color3,
   GlowLayer,
   Mesh,
   MeshBuilder,
   Nullable,
   PhysicsImpostor,
+  Quaternion,
   Scene,
   SceneLoader,
   //Space,
@@ -48,14 +49,13 @@ export class ShooterController extends BaseController {
     }
 
     const lightsaber = model.meshes[0];
-    lightsaber.position = new Vector3(0, 1, 2);
+    //lightsaber.position = new Vector3(0, 1, 2);
     lightsaber.isVisible = false;
 
     const gl = new GlowLayer('glow', scene, {
       mainTextureFixedSize: 512
     });
     gl.isEnabled = true;
-
 
     xr.pointerSelection.detach();
 
@@ -64,26 +64,18 @@ export class ShooterController extends BaseController {
         motionController.onModelLoadedObservable.add(() => {
           // motionController.rootMesh = lightsaber;
 
-          let mesh = <AbstractMesh>inputSource.grip;
-          if (motionController.handedness !== "left") {
-
-            //lightsaber.setParent(mesh);
-            // lightsaber.setParent(motionController.rootMesh);
+          //let mesh = <AbstractMesh>inputSource.grip;
+          if (motionController.handedness === 'right') {
             lightsaber.parent = inputSource.grip || inputSource.pointer;
             lightsaber.isVisible = true;
-            lightsaber.position = Vector3.ZeroReadOnly;
-            lightsaber.rotation = mesh.rotation;
-            lightsaber.rotate(Axis.X, Math.PI / 2);
-            lightsaber.position.z += 0.2;
+            lightsaber.position = Vector3.Zero();
+            //lightsaber.rotation = mesh.rotation;
+            //lightsaber.rotate(Axis.X, Math.PI / 2);
+            lightsaber.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
+            //lightsaber.position.z += 0.2;
             //lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
             //lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
-            lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
-          } else {
-            const copy = <AbstractMesh>lightsaber.clone('lightsaber2', motionController.rootMesh);
-            copy.isVisible = true;
-            copy.rotate(Axis.X, Math.PI / 2);
-            copy.position.z += 0.2;
-            //copy.parent = inputSource.grip || inputSource.pointer;
+            //lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
           }
         });
       });
