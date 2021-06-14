@@ -26,16 +26,9 @@ export abstract class AbstractController {
   protected _leftInputSource: WebXRInputSource;
   private _rightController: WebXRAbstractMotionController;
   private _leftController: WebXRAbstractMotionController;
-  private _anyTriggerPressed: boolean;
-  private _rightTriggerPressed: boolean;
-  private _leftTriggerPressed: boolean;
 
   constructor(experience: WebXRDefaultExperience) {
     this._experience = experience;
-
-    this._anyTriggerPressed = false;
-    this._rightTriggerPressed = false;
-    this._leftTriggerPressed = false;
 
     // Hack.
     this._rightInputSource = null as unknown as WebXRInputSource;
@@ -83,27 +76,11 @@ export abstract class AbstractController {
         const mainTriggerComponent = controller.getComponent('xr-standard-trigger');
         mainTriggerComponent.onButtonStateChangedObservable.add((component) => {
           if (component.value > 0.8 && component.pressed) {
-            this._anyTriggerPressed = true;
             this.onAnyTriggered(controller, component);
-            switch (controller.handness) {
-              case 'right':
-                this._rightTriggerPressed = true;
-                this.onRightTriggered(controller, component);
-                break;
-              case 'left':
-                this._leftTriggerPressed = true;
-                this.onLeftTriggered(controller, component);
-                break;
-            }
-          } else {
-            if (this._anyTriggerPressed) {
-              this._anyTriggerPressed = false;
-            }
-            if (this._rightTriggerPressed) {
-              this._rightTriggerPressed = false;
-            }
-            if (this._leftTriggerPressed) {
-              this._leftTriggerPressed = false;
+            if (controller.handness === 'right') {
+              this.onRightTriggered(controller, component);
+            } else {
+              this.onLeftTriggered(controller, component);
             }
           }
         });

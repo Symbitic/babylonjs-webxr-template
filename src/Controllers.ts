@@ -1,10 +1,12 @@
 import {
   AbstractMesh,
+  Axis,
   Mesh,
   MeshBuilder,
   Nullable,
   PhysicsImpostor,
   Scene,
+  Space,
   Vector3,
   WebXRAbstractMotionController,
   WebXRControllerComponent,
@@ -20,10 +22,46 @@ export class ShooterController extends BaseController {
   private _scene: Scene;
   private _physicsRoot: Mesh;
 
-  constructor(helper: WebXRDefaultExperience, scene: Scene, physicsRoot: Mesh) {
-    super(helper);
+  constructor(xr: WebXRDefaultExperience, scene: Scene, physicsRoot: Mesh) {
+    super(xr);
     this._scene = scene;
     this._physicsRoot = physicsRoot;
+    this.setupLightsaber(xr, scene);
+  }
+
+  private setupLightsaber(xr: WebXRDefaultExperience, _scene: Scene) {
+    let lightsaber: any = null;
+
+    /*
+    xr.input.onControllerAddedObservable.add((controller) => {
+      controller.onMotionControllerInitObservable.add((motionController) => {
+        if (motionController.handness === 'right') {
+          lightsaber = MeshBuilder.CreateBox('lightsaber', { width: 1, depth: 1, height: 1 });
+          // Make the position of the sphere the same as the controller
+          lightsaber.position = this.getControllerPosition(motionController);
+          lightsaber.parent = controller.grip;
+        }
+      });
+    });
+    */
+    xr.pointerSelection.detach();
+
+    xr.input.onControllerAddedObservable.add((inputSource) => {
+      inputSource.onMotionControllerInitObservable.add((motionController) => {
+        motionController.onModelLoadedObservable.add(() => {
+          let mesh = <AbstractMesh>inputSource.grip;
+          if (motionController.handedness !== "left") {
+            lightsaber.setParent(mesh);
+            lightsaber.position = Vector3.ZeroReadOnly;
+            lightsaber.rotation = mesh.rotation;
+            lightsaber.rotate(Axis.X, 1.57079, Space.LOCAL);
+            lightsaber.rotate(Axis.Y, 3.14159, Space.LOCAL);
+            lightsaber.locallyTranslate(new Vector3(0, -0.1, 0));
+          }
+        });
+      });
+    });
+
   }
 
   shoot(controller: WebXRAbstractMotionController) {

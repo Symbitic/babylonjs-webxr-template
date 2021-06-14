@@ -177,6 +177,7 @@ export default class App {
             model.rootMesh = box;
           });
           */
+          /*
           if (motionController.handedness === 'left') {
             const gl = new GlowLayer("glow", <Scene>this._scene, {
                 mainTextureFixedSize: 512
@@ -193,14 +194,15 @@ export default class App {
 
             lightsaber.parent = <AbstractMesh>inputSource.grip;
           }
+          */
         });
       });
 
       const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
-      const grabController = new GrabController(this._experience);
+      //const grabController = new GrabController(this._experience);
 
       this._controllers.push(shooterController);
-      this._controllers.push(grabController);
+      //this._controllers.push(grabController);
     }
 
     return true;
