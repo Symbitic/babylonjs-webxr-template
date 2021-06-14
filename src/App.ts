@@ -7,14 +7,15 @@ import {
   HemisphericLight,
   Mesh,
   MeshBuilder,
-  Nullable,
   PhysicsImpostor,
   Scene,
   Vector3,
-  WebXRAbstractMotionController,
   WebXRDefaultExperience,
+  WebXRSessionManager,
+
+  StandardMaterial,
   WebXRInputSource,
-  WebXRSessionManager
+  GlowLayer,
 } from '@babylonjs/core';
 
 import {
@@ -26,8 +27,8 @@ import {
 
 import * as cannon from 'cannon';
 
-import AbstractOculusQuestController from './AbstractOculusQuestController';
-import { OculusQuestShooterController } from './Controllers';
+import { AbstractController } from './AbstractController';
+import { ShooterController, GrabController } from './Controllers';
 
 export default class App {
   private _engine: Engine;
@@ -36,8 +37,10 @@ export default class App {
   private _supported: boolean;
   private _floorMeshes: AbstractMesh[] = [];
   private _experience?: WebXRDefaultExperience;
-  private _controllers: AbstractOculusQuestController[] = [];
+  private _controllers: AbstractController[] = [];
   private _error: string = '';
+  private _header: TextBlock;
+  private _camera?: ArcRotateCamera;
 
   get error() {
     return this._error;
@@ -47,6 +50,7 @@ export default class App {
     this._engine = engine;
     this._canvas = canvas;
     this._supported = false;
+    this._header = new TextBlock();
   }
 
   private createRandomVector3() {
@@ -94,42 +98,6 @@ export default class App {
     return physicsRoot;
   }
 
-  private onMotionControllerInput(inputSource: WebXRInputSource, controller: WebXRAbstractMotionController) {
-    if (!this._experience || !this._experience.pointerSelection.getMeshUnderPointer) {
-      return;
-    }
-    const experience = this._experience;
-    let grabbedMesh: Nullable<AbstractMesh> = null;
-    let originalPosition: Nullable<Vector3> = null;
-    const triggerComponent = controller.getComponent('xr-standard-trigger');
-
-    triggerComponent.onButtonStateChangedObservable.add((component) => {
-      if (component.value > 0.8 && component.pressed) {
-        if (!controller.rootMesh) {
-          return;
-        }
-
-        if (grabbedMesh === null) {
-          grabbedMesh = experience.pointerSelection.getMeshUnderPointer(inputSource.uniqueId);
-          if (grabbedMesh) {
-            if (!originalPosition) {
-              originalPosition = new Vector3(grabbedMesh.position.x, grabbedMesh.position.y, grabbedMesh.position.z);
-            }
-            grabbedMesh.position = controller.rootMesh.absolutePosition;
-          }
-        } else {
-          grabbedMesh.position = controller.rootMesh.absolutePosition;
-        }
-      } else {
-        if (grabbedMesh && originalPosition) {
-          grabbedMesh.position = originalPosition;
-          originalPosition = null;
-          grabbedMesh = null;
-        }
-      }
-    });
-  }
-
   async createScene(): Promise<boolean> {
     this._scene = new Scene(this._engine);
 
@@ -138,10 +106,10 @@ export default class App {
     light.name = 'light1'; // Mostly so that TypeScript doesn't complain.
 
     const cameraPos = new Vector3(0, 1.2, 0);
-    const camera = new ArcRotateCamera('camera1', 0, 0, 3, cameraPos, this._scene, true);
-    camera.position = new Vector3(0, 1.2, -1.1);
-    camera.attachControl(this._canvas, true);
-    camera.inputs.attached.mousewheel.detachControl();
+    this._camera = new ArcRotateCamera('camera1', 0, 0, 3, cameraPos, this._scene, true);
+    this._camera.position = new Vector3(0, 1.2, -1.1);
+    this._camera.attachControl(this._canvas, true);
+    this._camera.inputs.attached.mousewheel.detachControl();
 
     // Enable physics.
     this._scene.enablePhysics(null, new CannonJSPlugin(true, 10, cannon));
@@ -161,17 +129,16 @@ export default class App {
 
     const advancedTexture = AdvancedDynamicTexture.CreateForMesh(plane);
     const panel = new StackPanel();
-    const header = new TextBlock();
 
     advancedTexture.addControl(panel);
 
-    header.text = 'Text Block';
-    header.height = '150px';
-    header.width = '1400px';
-    header.color = 'white';
-    header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    header.fontSize = '60';
-    panel.addControl(header);
+    this._header.text = 'Text Block';
+    this._header.height = '150px';
+    this._header.width = '1400px';
+    this._header.color = 'white';
+    this._header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    this._header.fontSize = '60';
+    panel.addControl(this._header);
 
     const count = Math.round(Math.random() * 20);
     this.createObjects(count);
@@ -186,21 +153,83 @@ export default class App {
 
     if (this._supported) {
       this._experience = await this._scene.createDefaultXRExperienceAsync({
-        floorMeshes: this._floorMeshes
+        floorMeshes: this._floorMeshes,
+        disableTeleportation: true
       });
 
-      const shooterController = new OculusQuestShooterController(this._experience, this._scene, physicsRoot, header);
-      this._controllers.push(shooterController);
+      //const scene = this._scene;
 
-      this._experience.input.onControllerAddedObservable.add((inputSource) => {
-        inputSource.onMotionControllerInitObservable.add((controller) => {
-          this.onMotionControllerInput(inputSource, controller);
+      this._experience.input.onControllerAddedObservable.add((inputSource: WebXRInputSource) => {
+        //inputSource.onMeshLoadedObservable.add((model) => {});
+
+        //pistol.setParent(inputSource.pointer);
+
+        inputSource.onMotionControllerInitObservable.add((motionController) => {
+          /*
+          motionController.onModelLoadedObservable.add((model) => {
+            const name = model.handedness;
+            const material = new StandardMaterial(`material-${name}`, scene);
+            material.diffuseColor = name === 'left'
+              ? new Color3(1, 0, 0)
+              : new Color3(0, 0, 1);
+            const box = MeshBuilder.CreateBox(`box-${name}`, { size: 1 }, this._scene);
+            box.material = material;
+            model.rootMesh = box;
+          });
+          */
+          if (motionController.handedness === 'left') {
+            const gl = new GlowLayer("glow", <Scene>this._scene, {
+                mainTextureFixedSize: 512
+            });
+            const lightsaber = MeshBuilder.CreateCylinder('lightsaber', {
+                diameter: 0.70,
+                height: 12
+            }, this._scene);
+            lightsaber.position.set(0, 0, 90);
+
+            const material = new StandardMaterial('glowy', <Scene>this._scene);
+            material.emissiveColor = Color3.White();
+            lightsaber.material = material;
+
+            lightsaber.parent = <AbstractMesh>inputSource.grip;
+          }
         });
       });
 
+      const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
+      const grabController = new GrabController(this._experience);
 
+      this._controllers.push(shooterController);
+      this._controllers.push(grabController);
     }
 
+    return true;
+  }
+
+  /**
+   * Create a WebXR scene.
+   *
+   * Extends {{@link createScene}}. If WebXR is not available, then an error
+   * text block is displayed, and the function returns false.
+   *
+   * @returns `true` if scene was created and WebXR is available. `false` otherwise.
+   */
+  async createXrScene(): Promise<boolean> {
+    const ret = await this.createScene();
+    if (!ret) {
+      return false;
+    }
+
+    if (!this._supported) {
+      this._header.text = 'WebXR Not Available';
+      this._header.height = '300px';
+      this._header.color = 'red';
+      this._header.fontSize = '80';
+      this._header.resizeToFit = true;
+      this._header.fontWeight = 'bold';
+      this._camera?.detachControl();
+      return false;
+    }
     return true;
   }
 

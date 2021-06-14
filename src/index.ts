@@ -1,6 +1,7 @@
 import { Engine, WebXRSessionManager } from '@babylonjs/core';
 import App from './App';
 
+/* Change when you want a VR-only game. */
 const XR_REQUIRED = false;
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -34,6 +35,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   engine.resize();
 
   const app = new App(engine, canvas);
+
+  // TODO: Add check for XR here. If no XR, create a GUI label to say 'XR required but not found'
 
   const ret = await app.createScene();
   if (!ret) {

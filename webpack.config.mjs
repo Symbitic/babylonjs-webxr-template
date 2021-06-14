@@ -1,7 +1,6 @@
 import CompressionWebpackPlugin from 'compression-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
 
@@ -18,21 +17,11 @@ export default function ({ production }) {
   const mode = production ? 'production' : 'development';
   const devtool = production ? false : 'inline-source-map';
 
-  const optimization = {
-    minimizer: [
-      new TerserPlugin({
-        parallel: true,
-        //cache: true
-      })
-    ]
-    //usedExports: true,
-  };
-
   return {
-    mode,
-    devtool,
     entry: path.resolve('src/index.ts'),
     target: 'web',
+    mode,
+    devtool,
     stats: 'errors-only',
     bail: true,
     output: {
@@ -71,11 +60,13 @@ export default function ({ production }) {
     performance: {
       hints: false
     },
-    optimization: production ? optimization : {},
+    optimization: {
+      minimize: production ? true : false
+    },
     watchOptions: {
       aggregateTimeout: 300,
       poll: 300,
-      ignored: /node_modules/,
+      ignored: /node_modules/
     },
     plugins: [
       new CopyWebpackPlugin({

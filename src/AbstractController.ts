@@ -15,10 +15,12 @@ https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#
 https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#loadmodel
 https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#pulse
 https://doc.babylonjs.com/typedoc/classes/babylon.webxrdomoverlay
-
 */
 
-export default abstract class AbstractOculusQuestController {
+/**
+ * Handle specific inputs from a WebXR controller.
+ */
+export abstract class AbstractController {
   private _experience: WebXRDefaultExperience;
   protected _rightInputSource: WebXRInputSource;
   protected _leftInputSource: WebXRInputSource;
@@ -335,4 +337,27 @@ export default abstract class AbstractOculusQuestController {
   getMeshUnderLeftContollerPointer(): Nullable<AbstractMesh> {
     return this.getMeshUnderControllerPointer(this._leftController);
   }
+}
+
+export class BaseController extends AbstractController {
+  constructor(experience: WebXRDefaultExperience) {
+    super(experience);
+  }
+
+  onAButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onBButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onXButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onYButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onAnyTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onLeftTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onRightTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onAnyTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onLeftTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onRightTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onAnySqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onRightSqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onLeftSqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onAnyThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onRightThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
+  onLeftThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
 }

@@ -1,5 +1,3 @@
-import AbstractOculusQuestController from './AbstractOculusQuestController';
-
 import {
   AbstractMesh,
   Mesh,
@@ -13,23 +11,19 @@ import {
   WebXRDefaultExperience,
 } from '@babylonjs/core';
 
-import {
-  TextBlock,
-} from '@babylonjs/gui';
+import { BaseController } from './AbstractController';
 
 /**
  * Shoot spheres using the Oculus Quest controller.
  */
-export class OculusQuestShooterController extends AbstractOculusQuestController {
+export class ShooterController extends BaseController {
   private _scene: Scene;
   private _physicsRoot: Mesh;
-  private _textBlock: TextBlock;
 
-  constructor(helper: WebXRDefaultExperience, scene: Scene, physicsRoot: Mesh, textBlock: TextBlock) {
+  constructor(helper: WebXRDefaultExperience, scene: Scene, physicsRoot: Mesh) {
     super(helper);
     this._scene = scene;
     this._physicsRoot = physicsRoot;
-    this._textBlock = textBlock;
   }
 
   shoot(controller: WebXRAbstractMotionController) {
@@ -43,78 +37,21 @@ export class OculusQuestShooterController extends AbstractOculusQuestController 
     // Get the controller of the direction we want to launch in the same direction with the controller.
     const direction = this.getControllerDirection(controller);
     // For some reason it is slightly upward, so fine-tune it
-    const forceDirection = new Vector3(direction.x, direction.y-0.5, direction.z);
-    const forceMagnitude = 30;
+    const forceDirection = new Vector3(direction.x, direction.y - 0.5, direction.z);
+    const forceMagnitude = 50;
     // Apply force to the sphere to fire
     sphere.physicsImpostor.applyImpulse(forceDirection.scale(forceMagnitude), sphere.getAbsolutePosition());
   }
 
-  onAButtonPressed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "A Button Pressed";
+  onLeftTriggered(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
     this.shoot(controller);
-  }
-
-  onBButtonPressed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "B Button Pressed";
-    this.shoot(controller);
-  }
-
-  onXButtonPressed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "X Button Pressed";
-    this.shoot(controller);
-  }
-
-  onYButtonPressed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Y Button Pressed";
-    this.shoot(controller);
-  }
-
-  onAnyTriggered(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this.shoot(controller);
-  }
-
-  onRightTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Right triggered";
-  }
-
-  onLeftTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Left triggered";
-  }
-
-  onAnyTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onLeftTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onRightTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-
-  onAnySqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    //this.shoot(controller);
-  }
-
-  onRightSqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Right squeezed";
-  }
-
-  onLeftSqueezed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Left squeezed";
-    this.shoot(controller);
-  }
-
-  onAnyThumbStickPressed(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this.shoot(controller);
-  }
-
-  onRightThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Right Thumb Stick Pressed";
-  }
-
-  onLeftThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
-    this._textBlock.text = "Left Thumb Stick Pressed";
   }
 }
 
 /**
  * Handle grabs with the right controller.
  */
-export class OculusQuestGrabController extends AbstractOculusQuestController {
+export class GrabController extends BaseController {
   private _grabbedMesh: Nullable<AbstractMesh> = null;
   private _originalPosition: Nullable<Vector3> = null;
   private _helper: WebXRDefaultExperience;
@@ -123,12 +60,6 @@ export class OculusQuestGrabController extends AbstractOculusQuestController {
     super(helper);
     this._helper = helper;
   }
-
-  onAButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onBButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onXButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onYButtonPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onAnyTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
 
   onRightTriggered(controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
     if (!controller.rootMesh) {
@@ -148,10 +79,6 @@ export class OculusQuestGrabController extends AbstractOculusQuestController {
     }
   }
 
-  onLeftTriggered(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onAnyTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onLeftTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-
   onRightTriggerReleased(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {
     if (this._grabbedMesh && this._originalPosition) {
       this._grabbedMesh.position = this._originalPosition;
@@ -159,11 +86,4 @@ export class OculusQuestGrabController extends AbstractOculusQuestController {
       this._grabbedMesh = null;
     }
   }
-
-  onAnySqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onRightSqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onLeftSqueezed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onAnyThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onRightThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
-  onLeftThumbStickPressed(_controller: WebXRAbstractMotionController, _component: WebXRControllerComponent) {}
 }
