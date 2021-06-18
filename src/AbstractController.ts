@@ -9,14 +9,6 @@ import {
   WebXRInputSource
 } from '@babylonjs/core';
 
-/*
-https://doc.babylonjs.com/typedoc/classes/babylon.webxroculustouchmotioncontroller
-https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#getcomponentids
-https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#loadmodel
-https://doc.babylonjs.com/typedoc/classes/babylon.webxrabstractmotioncontroller#pulse
-https://doc.babylonjs.com/typedoc/classes/babylon.webxrdomoverlay
-*/
-
 /**
  * Handle specific inputs from a WebXR controller.
  */

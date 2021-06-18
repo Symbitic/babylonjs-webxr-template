@@ -3,12 +3,13 @@ import {
   ArcRotateCamera,
   CannonJSPlugin,
   Color3,
+  DirectionalLight,
   Engine,
-  HemisphericLight,
   Mesh,
   MeshBuilder,
   PhysicsImpostor,
   Scene,
+  StandardMaterial,
   Vector3,
   WebXRDefaultExperience,
   WebXRSessionManager,
@@ -26,7 +27,7 @@ import "@babylonjs/loaders/glTF";
 import * as cannon from 'cannon';
 
 import { AbstractController } from './AbstractController';
-import { ShooterController } from './Controllers';
+import { Controller } from './Controllers';
 
 export default class App {
   private _engine: Engine;
@@ -34,7 +35,7 @@ export default class App {
   private _scene?: Scene;
   private _supported: boolean;
   private _floorMeshes: AbstractMesh[] = [];
-  private _experience?: WebXRDefaultExperience;
+  private _xr?: WebXRDefaultExperience;
   private _controllers: AbstractController[] = [];
   private _error: string = '';
   private _header: TextBlock;
@@ -92,7 +93,7 @@ export default class App {
       ground.physicsImpostor = new PhysicsImpostor(
         ground,
         PhysicsImpostor.BoxImpostor,
-        { mass: 0, friction: 0.5, restitution: 0.7 },
+        { mass: 0, friction: 0.5, restitution: 0.85 },
         this._scene
       );
     });
@@ -103,12 +104,15 @@ export default class App {
   async createScene(): Promise<boolean> {
     this._scene = new Scene(this._engine);
 
-    const lightPos = new Vector3(1, 1, 0);
-    const light = new HemisphericLight('light1', lightPos, this._scene);
-    light.name = 'light1'; // Mostly so that TypeScript doesn't complain.
+    const lightDir = new Vector3(0, -0.5, 1.0);
+    const light = new DirectionalLight('light', lightDir, this._scene);
+    light.position = new Vector3(0, 5, -6);
 
-    const cameraPos = new Vector3(0, 1.2, 0);
-    this._camera = new ArcRotateCamera('camera1', 0, 0, 3, cameraPos, this._scene, true);
+    const lon = -Math.PI / 2;
+    const lat = Math.PI / 4 + 0.8;
+    const radius = 6;
+    const cameraTarget = new Vector3(0, 1, 0);
+    this._camera = new ArcRotateCamera('camera', lon, lat, radius, cameraTarget, this._scene);
     this._camera.position = new Vector3(0, 1.2, -1.1);
     this._camera.attachControl(this._canvas, true);
     this._camera.inputs.attached.mousewheel.detachControl();
@@ -116,15 +120,29 @@ export default class App {
     // Enable physics.
     this._scene.enablePhysics(null, new CannonJSPlugin(true, 10, cannon));
 
-    const environment = this._scene.createDefaultEnvironment();
+    const environment = this._scene.createDefaultEnvironment({ enableGroundShadow: true });
     if (!environment) {
       this._error = 'Error creating the default environment';
       return false;
     }
     environment.setMainColor(Color3.FromHexString('#74b9ff'));
 
-    const ground1 = MeshBuilder.CreateGround('ground1', { width: 50, height: 50, subdivisions: 4 }, this._scene);
-    this._floorMeshes.push(ground1);
+    const ground = MeshBuilder.CreateBox('ground', {
+      width: 10,
+      depth: 20,
+      height: 0.2
+    });
+    ground.position.y = -0.095
+    ground.parent = null;
+    ground.setAbsolutePosition(environment.ground!.getAbsolutePosition());
+    ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.85 });
+    ground.receiveShadows = true;
+
+    const groundMaterial = new StandardMaterial('groundMaterial', this._scene);
+    groundMaterial.diffuseColor = Color3.Black();
+    ground.material = groundMaterial;
+
+    this._floorMeshes.push(ground);
 
     const plane = MeshBuilder.CreatePlane('plane', { size: 1 });
     plane.position = new Vector3(0, 1, 0);
@@ -154,19 +172,22 @@ export default class App {
     this._supported = await WebXRSessionManager.IsSessionSupportedAsync('immersive-vr');
 
     if (this._supported) {
-      this._experience = await this._scene.createDefaultXRExperienceAsync({
+      this._xr = await this._scene.createDefaultXRExperienceAsync({
         floorMeshes: this._floorMeshes,
         disableTeleportation: true,
-        // inputOptions: { doNotLoadControllerMeshes: true }
+        uiOptions: {
+          sessionMode: 'immersive-vr',
+          referenceSpaceType: 'local-floor'
+        },
+        inputOptions: {
+          // Enable to disable loading controller models.
+          doNotLoadControllerMeshes: false
+        }
       });
 
-      const shooterController = new ShooterController(this._experience, this._scene, physicsRoot);
-      shooterController.setupLightsaber(this._experience, this._scene)
-
-      //const grabController = new GrabController(this._experience);
-
-      this._controllers.push(shooterController);
-      //this._controllers.push(grabController);
+      const controller = new Controller(this._xr, this._scene, physicsRoot);
+      await controller.setupLightsaber(this._xr, this._scene)
+      this._controllers.push(controller);
     }
 
     return true;
