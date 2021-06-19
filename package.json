@@ -11,7 +11,7 @@
     "lint": "eslint \"./src/**/*.{js,ts}\"",
     "preserve": "npm run build",
     "pretest": "npm run build",
-    "test": "npm run test",
+    "test": "npm run test:run",
     "test:run": "node test/test.mjs",
     "types:check": "tsc --noEmit",
     "serve": "serve -p 8080 dist",
