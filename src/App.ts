@@ -3,18 +3,18 @@ import {
   ArcRotateCamera,
   CannonJSPlugin,
   Color3,
-  Color4,
   DirectionalLight,
   Engine,
   Mesh,
   MeshBuilder,
   PhysicsImpostor,
   Scene,
-  StandardMaterial,
   Vector3,
   WebXRDefaultExperience,
   WebXRSessionManager,
 } from '@babylonjs/core';
+
+import { GridMaterial } from '@babylonjs/materials';
 
 import {
   AdvancedDynamicTexture,
@@ -105,35 +105,15 @@ export default class App {
     // Enable physics.
     this._scene.enablePhysics(null, new CannonJSPlugin(true, 10, cannon));
 
-    //this._scene.createDefaultLight(false);
-
-    /*
-    const environment = this._scene.createDefaultEnvironment({
-      enableGroundShadow: true,
-      createGround: false,
-      // skyboxSize: 1000
-    });
+    const environment = this._scene.createDefaultEnvironment({ enableGroundShadow: true });
     if (!environment) {
       this._error = 'Error creating the default environment';
       return false;
     }
-    environment.setMainColor(Color3.White());
-    */
+    environment.setMainColor(Color3.Teal());
 
-    const groundParams = {
-      mass: 0,
-      friction: 0.8,
-      restitution: 0.5,
-      disableBidirectionalTransformation: true
-    };
-    const ground = MeshBuilder.CreateGround('ground', { width: 1000, height: 1000 });
-    ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, groundParams);
-    ground.checkCollisions = true;
-    ground.receiveShadows = true;
-
-    /*
     const ground = MeshBuilder.CreateBox('ground', {
-      width: 10,
+      width: 20,
       depth: 20,
       height: 0.2
     });
@@ -142,19 +122,12 @@ export default class App {
     ground.setAbsolutePosition(environment.ground!.getAbsolutePosition());
     ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.85 });
     ground.receiveShadows = true;
-    */
-
-    const groundMaterial = new StandardMaterial('groundMaterial', this._scene);
-    groundMaterial.diffuseColor = Color3.Black();
-    ground.material = groundMaterial;
-
-    this._scene.clearColor = new Color4(1, 1, 1, 1);
-    //this._scene.ambientColor = new Color3(1, 1, 1);
+    ground.material = new GridMaterial('mat', this._scene);
 
     this._floorMeshes.push(ground);
 
     const plane = MeshBuilder.CreatePlane('plane', { size: 1 });
-    plane.position = new Vector3(0, 1, 0);
+    plane.position = new Vector3(0, 1, 0.5);
 
     const advancedTexture = AdvancedDynamicTexture.CreateForMesh(plane);
     const panel = new StackPanel();
@@ -165,8 +138,6 @@ export default class App {
     this._header.height = '150px';
     this._header.width = '1400px';
     this._header.color = 'white';
-    this._header.outlineColor = 'black';
-    this._header.outlineWidth = 2;
     this._header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     this._header.fontSize = '60';
     panel.addControl(this._header);
@@ -178,7 +149,6 @@ export default class App {
     }
 
     this._supported = await WebXRSessionManager.IsSessionSupportedAsync('immersive-vr');
-
     if (this._supported) {
       this._xr = await this._scene.createDefaultXRExperienceAsync({
         floorMeshes: this._floorMeshes,
