@@ -11,7 +11,8 @@
     "lint": "eslint \"./src/**/*.{js,ts}\"",
     "preserve": "npm run build",
     "pretest": "npm run build",
-    "test": "node test/test.mjs",
+    "test": "npm run test",
+    "test:run": "node test/test.mjs",
     "types:check": "tsc --noEmit",
     "serve": "serve -p 8080 dist",
     "start": "cross-env NODE_ENV=development webpack serve --env development"

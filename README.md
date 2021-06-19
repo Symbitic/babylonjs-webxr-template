@@ -7,6 +7,15 @@
 
 A simple demo demonstrating WebXR using Babylon.js and TypeScript.
 
+## Features
+
+* Error checking
+* Physics
+* Custom WebXR controller mesh
+* GLTF model loading
+* GlowLayer
+* Observables
+
 ## Running 
 
 You can install the dependencies by running:
