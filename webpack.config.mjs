@@ -108,12 +108,11 @@ export default function ({ production }) {
         poll: 300
       },
 
-      // enable to access from other devices on the network
+      // enable access from other devices on the network
       useLocalIp: true,
       host: '0.0.0.0',
-      // host: '192.168.1.143',
 
-      // if you aren’t using ngrok, and want to connect locally, webxr requires https
+      // if you aren’t using ngrok, and want to connect locally, WebXR requires HTTPS
       // https: true,
     },
   };

@@ -28,7 +28,9 @@ After that, you can run the development server with:
 npm run start
 ```
 
-After that, open `https://localhost:8080/index.html` in your web browser to view the demo.
+After that, open `http://localhost:8080/index.html` in your web browser to view the demo.
+
+**Note**: WebXR requires HTTPS. Sign up for a free account with [ngrok](https://ngrok.com/) or enable the `https` option in webpack to access the demo locally.
 
 ## License
 
