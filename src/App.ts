@@ -3,6 +3,7 @@ import {
   ArcRotateCamera,
   CannonJSPlugin,
   Color3,
+  Color4,
   DirectionalLight,
   Engine,
   Mesh,
@@ -56,22 +57,6 @@ export default class App {
     this._header = new TextBlock();
   }
 
-  private createRandomVector3() {
-    const x = (Math.round(Math.random()) * 2 - 1) * Math.random() * 5;
-    const y = Math.random() * 5;
-    const z = (Math.round(Math.random()) * 2 - 1) * Math.random() * 5;
-    return new Vector3(x, y, z);
-  }
-
-  private createObjects(count: number) {
-    for (let i=0; i<count; i++) {
-      const box = MeshBuilder.CreateBox(`box${i+1}`, { size: 0.1 }, this._scene);
-      const sphere = MeshBuilder.CreateSphere(`sphere${i+1}`, { diameter: 0.1 }, this._scene);
-      box.position = this.createRandomVector3();
-      sphere.position = this.createRandomVector3();
-    }
-  }
-
   private setupGravity() {
     if (!this._scene) {
       return;
@@ -120,13 +105,33 @@ export default class App {
     // Enable physics.
     this._scene.enablePhysics(null, new CannonJSPlugin(true, 10, cannon));
 
-    const environment = this._scene.createDefaultEnvironment({ enableGroundShadow: true });
+    //this._scene.createDefaultLight(false);
+
+    /*
+    const environment = this._scene.createDefaultEnvironment({
+      enableGroundShadow: true,
+      createGround: false,
+      // skyboxSize: 1000
+    });
     if (!environment) {
       this._error = 'Error creating the default environment';
       return false;
     }
-    environment.setMainColor(Color3.FromHexString('#74b9ff'));
+    environment.setMainColor(Color3.White());
+    */
 
+    const groundParams = {
+      mass: 0,
+      friction: 0.8,
+      restitution: 0.5,
+      disableBidirectionalTransformation: true
+    };
+    const ground = MeshBuilder.CreateGround('ground', { width: 1000, height: 1000 });
+    ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, groundParams);
+    ground.checkCollisions = true;
+    ground.receiveShadows = true;
+
+    /*
     const ground = MeshBuilder.CreateBox('ground', {
       width: 10,
       depth: 20,
@@ -137,10 +142,14 @@ export default class App {
     ground.setAbsolutePosition(environment.ground!.getAbsolutePosition());
     ground.physicsImpostor = new PhysicsImpostor(ground, PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.85 });
     ground.receiveShadows = true;
+    */
 
     const groundMaterial = new StandardMaterial('groundMaterial', this._scene);
     groundMaterial.diffuseColor = Color3.Black();
     ground.material = groundMaterial;
+
+    this._scene.clearColor = new Color4(1, 1, 1, 1);
+    //this._scene.ambientColor = new Color3(1, 1, 1);
 
     this._floorMeshes.push(ground);
 
@@ -156,12 +165,11 @@ export default class App {
     this._header.height = '150px';
     this._header.width = '1400px';
     this._header.color = 'white';
+    this._header.outlineColor = 'black';
+    this._header.outlineWidth = 2;
     this._header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     this._header.fontSize = '60';
     panel.addControl(this._header);
-
-    const count = Math.round(Math.random() * 20);
-    this.createObjects(count);
 
     const physicsRoot = this.setupGravity();
     if (!physicsRoot) {
